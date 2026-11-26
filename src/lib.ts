@@ -93,8 +93,8 @@ export function occurrences(e: Ev, from: string, to: string): string[] {
   return out;
 }
 
-/** 휴가 → 중요 → 나머지 순서 */
-export const rank = (e: Ev) => (e.kind === '휴가' ? 0 : e.important ? 1 : 2);
+/** 휴가 → 근무(야간·출장 등) → 중요 → 나머지 순서 */
+export const rank = (e: Ev) => (e.kind === '휴가' ? 0 : e.kind === '근무' ? 1 : e.important ? 2 : 3);
 export function sortEvs(a: Ev, b: Ev) {
   const r = rank(a) - rank(b);
   if (r) return r;

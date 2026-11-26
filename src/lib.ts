@@ -111,8 +111,9 @@ export function repeatLabel(e: Ev) {
 }
 
 /* ───────── 저장소 ───────── */
-const URL_ = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const KEY_ = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+const URL_ = (import.meta.env.VITE_SUPABASE_URL as string | undefined) || 'https://emfkutnrqvquaqgldwww.supabase.co';
+// 공개용(publishable) 키 — 앱 화면에 들어가도 되는 키예요. 실제 보호는 Supabase 권한 규칙(RLS)이 해요.
+const KEY_ = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined) || '';
 export const DEMO = new URLSearchParams(location.search).has('demo') || !URL_ || !KEY_;
 export const sb: SupabaseClient | null = DEMO ? null : createClient(URL_!, KEY_!);
 

@@ -239,7 +239,8 @@ function MonthView({ month, setMonth, sel, setSel, byDate, onOpen }: {
               <span className={`num ${d === t ? 'today' : ''} ${wd === 0 ? 'sun' : wd === 6 ? 'sat' : ''}`}>{parse(d).getDate()}</span>
               {items.slice(0, 3).map((e) => {
                 const p = person(e.person);
-                return <span key={e.id} className="bar" style={{ background: p.soft, color: p.color, borderLeftColor: p.color }}>{e.title}</span>;
+                const hot = e.kind === '휴가' || e.important;
+                return <span key={e.id} className={`bar ${hot ? 'hot' : ''}`} style={hot ? { background: p.color, color: '#fff', borderLeftColor: p.color } : { background: p.soft, color: p.color, borderLeftColor: p.color }}>{e.important && e.kind !== '휴가' ? '★' : ''}{e.title}</span>;
               })}
               {items.length > 3 && <span className="more">+{items.length - 3}</span>}
             </button>
@@ -279,10 +280,11 @@ function Card({ e, onClick }: { e: Ev; onClick: () => void }) {
   const p = person(e.person);
   const multi = !e.repeat_days?.length && e.end_date !== e.start_date;
   return (
-    <button className="card" onClick={onClick} style={{ borderLeftColor: p.color }}>
+    <button className={`card ${e.important || e.kind === '휴가' ? 'hot' : ''}`} onClick={onClick} style={{ borderLeftColor: p.color }}>
       <div className="row1">
         <span className="tag" style={{ background: p.color }}>{p.label}</span>
-        <span className="kind">{e.kind}</span>
+        <span className={`kind ${e.kind === '휴가' ? 'vac' : ''}`}>{e.kind}</span>
+        {e.important && <span className="imp">★ 중요</span>}
         <span className="time">{timeLabel(e)}</span>
       </div>
       <div className="title">{e.title}</div>
@@ -315,6 +317,7 @@ function EventSheet({ me, date, ev, onClose, onSave, onDelete, onSkip }: {
   const [repeat, setRepeat] = useState(!!ev?.repeat_days?.length);
   const [until, setUntil] = useState(ev?.repeat_until ?? '');
   const [memo, setMemo] = useState(ev?.memo ?? '');
+  const [imp, setImp] = useState(ev?.important ?? false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
   const [confirmDel, setConfirmDel] = useState(false);
@@ -333,7 +336,7 @@ function EventSheet({ me, date, ev, onClose, onSave, onDelete, onSkip }: {
         start_date: start, end_date: repeat ? start : multi ? end : start,
         all_day: allDay, start_time: allDay ? null : st || null, end_time: allDay ? null : et || null,
         repeat_days: repeat ? rep : null, repeat_until: repeat && until ? until : null,
-        skip_dates: ev?.skip_dates ?? [], memo: memo.trim() || null, created_by: ev?.created_by ?? me,
+        skip_dates: ev?.skip_dates ?? [], memo: memo.trim() || null, important: imp, created_by: ev?.created_by ?? me,
       });
     } catch { setMsg('저장하지 못했어요. 다시 눌러주세요.'); setBusy(false); }
   };
@@ -403,6 +406,8 @@ function EventSheet({ me, date, ev, onClose, onSave, onDelete, onSkip }: {
               {!until && <p className="hint">끝나는 날을 비워두면 계속 반복돼요. 위 날짜부터 시작해요.</p>}
             </>
           )}
+
+          <div className="toggles"><Toggle on={imp} set={setImp} label="★ 중요 (목록 맨 위에 표시)" /></div>
 
           <label>메모</label>
           <textarea rows={2} value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="준비물, 장소, 데리러 갈 사람 등" />

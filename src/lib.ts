@@ -37,6 +37,7 @@ export interface Ev {
   repeat_until: string | null;
   skip_dates: string[];
   memo: string | null;
+  important: boolean;
   created_by: string | null;
   updated_at?: string;
 }
@@ -92,7 +93,11 @@ export function occurrences(e: Ev, from: string, to: string): string[] {
   return out;
 }
 
+/** 휴가 → 중요 → 나머지 순서 */
+export const rank = (e: Ev) => (e.kind === '휴가' ? 0 : e.important ? 1 : 2);
 export function sortEvs(a: Ev, b: Ev) {
+  const r = rank(a) - rank(b);
+  if (r) return r;
   if (a.all_day !== b.all_day) return a.all_day ? -1 : 1;
   const t = (a.start_time ?? '').localeCompare(b.start_time ?? '');
   if (t) return t;
@@ -119,7 +124,7 @@ export function seedDemo() {
   const mk = (p: Partial<Ev>): Ev => ({
     id: String(demoSeq++), title: '', person: 'family', kind: '기타', start_date: t, end_date: t,
     all_day: true, start_time: null, end_time: null, repeat_days: null, repeat_until: null,
-    skip_dates: [], memo: null, created_by: 'mom', ...p,
+    skip_dates: [], memo: null, important: false, created_by: 'mom', ...p,
   });
   demoRows = [
     mk({ title: '수학학원', person: 'taemin', kind: '학원', all_day: false, start_time: '15:30', end_time: '17:00', repeat_days: [1, 3, 5], start_date: addDays(t, -20) }),
@@ -127,7 +132,8 @@ export function seedDemo() {
     mk({ title: '여름휴가', person: 'dad', kind: '휴가', start_date: addDays(t, 6), end_date: addDays(t, 8), created_by: 'dad' }),
     mk({ title: '야간근무', person: 'mom', kind: '근무', all_day: false, start_time: '18:00', end_time: '22:00', start_date: addDays(t, 1), end_date: addDays(t, 1) }),
     mk({ title: '정형외과', person: 'grandma', kind: '병원', all_day: false, start_time: '10:30', start_date: t, end_date: t, created_by: 'grandma', memo: '진료카드 챙기기' }),
-    mk({ title: '할아버지 제사', person: 'family', kind: '행사', start_date: addDays(t, 12), end_date: addDays(t, 12) }),
+    mk({ title: '할아버지 제사', person: 'family', kind: '행사', important: true, start_date: addDays(t, 12), end_date: addDays(t, 12) }),
+    mk({ title: '태민 학부모 상담', person: 'taemin', kind: '약속', important: true, all_day: false, start_time: '16:00', start_date: addDays(t, 7), end_date: addDays(t, 7) }),
   ];
 }
 
@@ -136,7 +142,7 @@ export const api = {
     if (DEMO) return demoRows.map((r) => ({ ...r }));
     const { data, error } = await sb!.from('fam_events').select('*').order('start_date');
     if (error) throw error;
-    return (data as Ev[]).map((r) => ({ ...r, skip_dates: r.skip_dates ?? [] }));
+    return (data as Ev[]).map((r) => ({ ...r, skip_dates: r.skip_dates ?? [], important: !!r.important }));
   },
   async add(v: EvInput) {
     if (DEMO) { demoRows.push({ ...v, id: String(demoSeq++) }); demoListeners.forEach((f) => f()); return; }

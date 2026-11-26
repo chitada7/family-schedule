@@ -28,6 +28,7 @@ create table if not exists fam_events (
   repeat_until date,
   skip_dates date[] not null default '{}',  -- 반복 중 빠지는 날 (휴강 등)
   memo text,
+  important boolean not null default false,
   created_by text,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
@@ -36,6 +37,8 @@ create index if not exists fam_events_start on fam_events (start_date);
 alter table fam_events enable row level security;
 drop policy if exists fam_events_family on fam_events;
 create policy fam_events_family on fam_events for all using (fam_is_member()) with check (fam_is_member());
+
+alter table fam_events add column if not exists important boolean not null default false;
 
 grant select on fam_access to authenticated;
 grant select, insert, update, delete on fam_events to authenticated;

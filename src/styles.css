@@ -121,3 +121,7 @@ html.big .bar { font-size: 12px; line-height: 17px; }
 .danger button { padding: 12px; border-radius: 12px; background: #F6F7FA; font-weight: 600; font-size: .92em; }
 .danger .really { background: #E5484D; color: #fff; }
 .line { width: 100%; text-align: left; padding: 15px 4px; border-bottom: 1px solid var(--line); font-weight: 600; }
+.bar.hot { font-weight: 800; }
+.kind.vac { color: #fff; background: var(--ink); padding: 2px 8px; border-radius: 99px; }
+.imp { color: #D93A3F; font-weight: 800; }
+.card.hot { box-shadow: 0 0 0 1.5px rgba(229,72,77,.25), 0 2px 6px rgba(20,30,60,.06); }

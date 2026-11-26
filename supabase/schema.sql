@@ -40,6 +40,8 @@ create policy fam_events_family on fam_events for all using (fam_is_member()) wi
 
 alter table fam_events add column if not exists important boolean not null default false;
 
+alter table fam_access add column if not exists who text;
+
 grant select on fam_access to authenticated;
 grant select, insert, update, delete on fam_events to authenticated;
 

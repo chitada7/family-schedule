@@ -19,7 +19,9 @@ export default function App() {
     const s = data.session;
     if (!s) { setPhase('login'); return; }
     setEmail(s.user.email ?? '');
-    const { data: acc } = await sb!.from('fam_access').select('user_id').eq('user_id', s.user.id).maybeSingle();
+    const { data: acc } = await sb!.from('fam_access').select('*').eq('user_id', s.user.id).maybeSingle();
+    // 계정마다 사람이 정해져 있으면 '누구세요?'를 건너뛰어요
+    if (acc?.who) { store.set('fam_me', acc.who); setMe(acc.who as PersonKey); }
     setPhase(acc ? 'ready' : 'noaccess');
   }, []);
 
